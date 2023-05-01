@@ -205,10 +205,13 @@ function OperatorPage() {
                 <div className={style.filterTitle}>{filterGroup.name}</div>
                 <div className={style.filterItem}>
                     {filterGroup.filterItem.map((filter) => {
-                        return <>
-                            <div key={filter.value} onClick={() => filterGroup.clickEvent(filter)} className={`${style.filter} ${searchOpValue.getSearchOption[filterGroup.objName as keyof SearchOptionType].indexOf(filter.value) === -1 ? '' : style.selected}`}>{filter.printValue}</div>
-
-                        </>
+                        if(filterGroup.objName === "rarity" || filterGroup.objName === "profession") {
+                            const checkFilter:Array<string|number> = searchOpValue.getSearchOption[filterGroup.objName]
+                            return <>
+                            <div key={filter.value} onClick={() => filterGroup.clickEvent(filter)} className={`${style.filter} ${checkFilter.indexOf(filter.value) === -1 ? '' : style.selected}`}>{filter.printValue}</div>
+                        </>    
+                        }
+                        
                     })}
                 </div>
             </div>

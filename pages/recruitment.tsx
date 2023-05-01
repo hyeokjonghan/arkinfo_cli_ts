@@ -171,6 +171,7 @@ export default function RecruimentPage(props: {results: serverSideResult}) {
 
     const printTagListJsx = Object.keys(printTagList).map((opClass) => {
         if(opClass !=="sex") {
+            
             return <>
             <div className={style.tagPickerListWrap}>
                 <div className={style.tagPickerList}>

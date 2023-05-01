@@ -1,7 +1,7 @@
 import { useRouter } from "next/router"
 import Link from "next/link";
 import navStyle from "@/styles/commonNav.module.scss"
-import { useEffect, useRef, useState } from "react";
+import { ChangeEvent, useEffect, useRef, useState } from "react";
 // import searchOp, * as operatorActions from '@/store/modules/searchOp'
 // import { useSelector, useDispatch } from 'react-redux';
 import rootStore from "@/store/rootStore";
@@ -56,7 +56,7 @@ export default function CommonNav() {
         setRandomBack(searchWrapBackgruond[Math.floor(Math.random() * searchWrapBackgruond.length)])
     },[router.route])
 
-    const searchInputBind = (e) => {
+    const searchInputBind = (e:React.ChangeEvent<HTMLInputElement>) => {
         setSaerchPrintOpName(e.target.value)
     }
     const searchOpRef = useRef<HTMLInputElement>(null)
