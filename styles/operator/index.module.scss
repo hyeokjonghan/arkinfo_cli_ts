@@ -1,0 +1,151 @@
+.filterWrap {
+    @include filterContainer();
+    padding: 10px !important;
+    .filterHeader {
+        display:flex;
+        align-items: center;
+        justify-content: space-between;
+        color: $text-color;
+        font-size: 20px;
+        .filetrOnOff {
+            cursor: pointer;
+            transition: transform 0.2s;
+            &.filterOpen {
+                transform: rotate(180deg);
+            }
+        }
+    }
+
+    .filterContentWrap {
+        transition: max-height 0.2s;
+            overflow: hidden;
+            max-height: 1200px;
+            &.filterClose {
+                max-height: 0;
+            }
+            
+        .filterList {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            @media(max-width:768px) {
+                gap: 20px;
+            }
+    
+            .filterItemList {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 20px;
+                @media(max-width:768px) {
+                    gap: 10px;
+                }
+                &:last-child {
+                    padding-bottom: 10px;
+                }
+                .filterTitle {
+                    width: 80px;
+                    text-align: right;
+                    color: $text-color;
+                    font-weight: bold;
+                    @media(max-width:768px) {
+                        width: 100%;
+                        text-align: center;
+                    }
+                }
+                .filterItem {
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 10px;
+                    width: calc(100% - 100px);
+                    @media(max-width:768px) {
+                        width: 100%;
+                        justify-content: center;
+                    }
+
+                    .filter {
+                        padding: 6px 8px;
+                        @include button();
+                        text-align: center;
+                        width: 120px;
+                    }
+                }
+            }
+        }
+    
+        .filterFooter {
+            padding-top: 10px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            padding-bottom: 10px;
+            >button {
+                width: 140px;
+                height: 40px;
+                padding: 0 10px;
+                font-weight: 700;
+                font-size: 16px;
+                @include button;
+                &.active {
+                    background-color: $active-color;
+                }
+    
+                @media(max-width: 768px) {
+                    font-size: 14px;
+                }
+            }
+        }
+    }
+    
+}
+
+.operatorListWrap {
+    display: flex;
+    gap: 20px 10px;
+    flex-wrap: wrap;
+    padding: 20px 0;
+    justify-content: center;
+    .operatorItem {
+        display: flex;
+        text-align: center;
+        flex-direction: column;
+        cursor: pointer;
+        border: 1px solid #333;
+        background-color: #666;
+        &.rarity0 {
+            border: 1px solid $rank1;
+            color: #FFF;
+        }
+        &.rarity1 {
+            border: 1px solid $rank2;
+            color: $rank2;
+        }
+        &.rarity2 {
+            border: 1px solid $rank3;
+            color: $rank3;
+        }
+        &.rarity3 {
+            border: 1px solid $rank4;
+            color: $rank4;
+        }
+        &.rarity4 {
+            border: 1px solid $rank5;
+            color: $rank5;
+        }
+        &.rarity5 {
+            border: 1px solid $rank6;
+            color: $rank6;
+        }
+        img {
+            @media (max-width: 768px) {
+                width: 120px;
+                height: 120px;
+            }
+        }
+        .operatorName {
+            padding: 5px 0;
+            @media (max-width: 768px) {
+                font-size: 14px;
+            }
+        }
+    }
+}

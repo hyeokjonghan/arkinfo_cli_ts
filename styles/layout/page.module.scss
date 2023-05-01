@@ -1,0 +1,4 @@
+.pageLayoutWrap {
+    min-height: calc(100vh - $header-height - $footer-height - $menu-height);
+    background-color: $content-background-color;
+}

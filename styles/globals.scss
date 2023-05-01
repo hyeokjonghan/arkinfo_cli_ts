@@ -1,0 +1,45 @@
+@import url('https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700&display=swap');
+* {
+    font-family: 'Nanum Gothic', sans-serif;
+}
+
+body {
+    overflow-x: hidden;
+    overflow-y: overlay;
+}
+ul {
+    list-style: none;
+    padding: 0;
+}
+
+a {
+    color: $text-color;
+    text-decoration: none;
+}
+
+a:hover {
+    color: $text-color;
+}
+
+::-webkit-scrollbar {
+    width: 10px;
+    background-color: transparent;
+}
+
+::-webkit-scrollbar-track {
+    background-color: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #666;
+    border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #333;
+}
+
+::-webkit-scrollbar-corner {
+    background-color: transparent;
+    border-color: transparent;
+}

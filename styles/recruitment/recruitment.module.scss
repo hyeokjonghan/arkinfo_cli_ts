@@ -1,0 +1,77 @@
+.tagPicker {
+    @include filterContainer();
+    .tagPickerListWrap {
+        padding-bottom: 10px;
+        
+        .tagPickerList {
+            margin-top: 10px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            @media(max-width: 768px) {
+                justify-content: center;
+            }
+            .tag {
+                width: 100px;
+                text-align: center;
+                padding: 6px 8px;
+                font-size: 14px;
+                @include button;
+            }
+        }
+    }
+    .btnListWrap {
+        padding-top: 10px;
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        >button {
+            width: 140px;
+            height: 40px;
+            padding: 0 10px;
+            font-weight: 700;
+            font-size: 16px;
+            @include button;
+            &.active {
+                background-color: $active-color;
+            }
+
+            @media(max-width: 768px) {
+                font-size: 14px;
+            }
+        }
+
+
+    }
+}
+
+.resultWrap {
+    padding: 20px 0;
+    .resultInnerWrap {
+        background-color: #666;
+        padding: 10px;
+        border: 1px solid #FFF;
+        border-radius: 8px;
+
+        .pickerTagWrap {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 10px;
+            .pickterTag {
+                border: 1px solid #FFF;
+                background-color: #333;
+                color: $text-color;
+                border-radius: 5px;
+                padding: 5px 8px;
+            }
+        }
+
+        .resultOpWrap {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+    }
+}

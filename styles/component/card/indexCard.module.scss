@@ -1,0 +1,35 @@
+.indexCardWrap {
+    background-color: $container-background-color;
+    .indexCardImg {
+        background-repeat: no-repeat;
+        background-size: cover;
+        background-position: center;
+        width: 100%;
+        height: 230px;
+        .indexCardBack {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(0, rgba(0,0,0,0.15) 0%, rgba(255,255,255,0.2) 100%);
+        }
+    }
+    .indexCardInfo {
+        display: flex;
+        flex-direction: column;
+        .indexCardTitle {
+            background-color: $sub-primary-color;
+            color: $text-color;
+            font-size: 18px;
+            font-weight: 700;
+            text-align: center;
+            padding: 10px 0;
+        }
+        .indexCardContent {
+            background-color: #555;
+            min-height: 150px;
+            padding: 10px;
+            letter-spacing: -0.5px;
+            color: $text-color;
+            margin: 0;
+        }
+    }
+}

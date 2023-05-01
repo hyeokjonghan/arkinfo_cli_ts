@@ -1,0 +1,41 @@
+.opLabel {
+    display: flex;
+    gap: 5px;
+    border: 1px solid;
+    align-items: center;
+    justify-content: center;
+    padding: 5px 8px;
+    color: $text-color;
+    line-height: 20px;
+    &.rarity1 {
+        color: $rank1;
+        border-color: $rank1;
+    }
+    &.rarity2 {
+        color: $rank2;
+        border-color: $rank2;
+    }
+    &.rarity3 {
+        color: $rank3;
+        border-color: $rank3;
+    }
+    &.rarity4 {
+        color: $rank4;
+        border-color: $rank4;
+    }
+    &.rarity5 {
+        color: $rank5;
+        border-color: $rank5;
+    }
+    &.rarity6 {
+        color: $rank6;
+        border-color: $rank6;
+    }
+
+    .rankWrap {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+}
