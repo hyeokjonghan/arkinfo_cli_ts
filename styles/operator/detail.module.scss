@@ -13,6 +13,7 @@
             background-size: contain;
             padding-bottom: 56.3%;
             z-index: 1;
+
             .logoWrap {
                 position: absolute;
                 z-index: 0;
@@ -23,9 +24,11 @@
                 left: 0;
                 top: 0;
             }
+
             .operatorSkinPreviewWrap {
                 max-height: 800px;
                 cursor: pointer;
+
                 .operatorSkin {
                     width: 100%;
                     height: 100%;
@@ -34,29 +37,36 @@
                     background-size: contain;
                     position: absolute;
                     top: 0;
-    
+
                 }
             }
+
             .operatorSkinList {
                 position: absolute;
                 left: 0;
                 bottom: 0;
+
                 ul {
                     flex-wrap: wrap;
                     margin: 0;
                     max-height: 260px;
+
                     @media(max-width: 768px) {
                         max-height: 140px;
+
                         &::-webkit-scrollbar {
                             width: 0;
                         }
                     }
+
                     width: 80px;
                     overflow-y: auto;
                     overflow-x: hidden;
+
                     &:hover {
                         overflow-y: auto;
                     }
+
                     .operatorSkinItem {
                         cursor: pointer;
                         background-position: center;
@@ -65,6 +75,7 @@
                         width: 80px;
                         height: 80px;
                         border: 1px solid #FFF;
+
                         @media(max-width: 768px) {
                             width: 60px;
                             height: 60px;
@@ -72,9 +83,9 @@
                     }
                 }
             }
-            
+
         }
-    
+
         .defaultInfoWrap {
             position: absolute;
             right: 0;
@@ -83,7 +94,7 @@
             padding: 10px;
             width: 284px;
             z-index: 2;
-            
+
             @media(max-width: 768px) {
                 width: 100%;
                 margin-top: 10px;
@@ -92,25 +103,32 @@
                 position: unset;
 
             }
+
             .rankWrap {
                 display: flex;
+
                 .starwrap {
                     font-size: 14px;
                     transform: rotate(-45deg);
+
                     i {
-                        box-shadow: 1px 5px 21px -5px rgba(0,0,0,0.81);
-                        -webkit-box-shadow: 1px 5px 21px -5px rgba(0,0,0,0.81);
-                        -moz-box-shadow: 1px 5px 21px -5px rgba(0,0,0,0.81);
+                        box-shadow: 1px 5px 21px -5px rgba(0, 0, 0, 0.81);
+                        -webkit-box-shadow: 1px 5px 21px -5px rgba(0, 0, 0, 0.81);
+                        -moz-box-shadow: 1px 5px 21px -5px rgba(0, 0, 0, 0.81);
                     }
                 }
             }
+
             .nameWrap {
+                margin-bottom: 30px;
+
                 .appellation {
                     font-size: 20px;
                     line-height: 20px;
                     font-weight: bold;
                     -webkit-text-stroke: 1px #000;
                 }
+
                 .name {
                     line-height: 36px;
                     font-weight: bold;
@@ -121,9 +139,11 @@
             .defaultInfo {
                 display: flex;
                 gap: 2px;
+
                 @media (max-width:768px) {
                     justify-content: center;
                 }
+
                 .prefession {
                     width: 60px;
                     height: 60px;
@@ -131,11 +151,12 @@
                     background-position: center;
                     background-repeat: no-repeat;
                     background-size: contain;
-                    background-color: rgba(0,0,0,0.3);
+                    background-color: rgba(0, 0, 0, 0.3);
                 }
+
                 .rangeWrap {
                     width: 120px;
-                    background-color: rgba(0,0,0,0.3);
+                    background-color: rgba(0, 0, 0, 0.3);
                     display: flex;
                     justify-content: center;
                     align-items: stretch;
@@ -143,35 +164,42 @@
                     font-weight: bold;
                     flex-direction: column;
                     text-align: center;
+
                     .range {
                         height: 40px;
                         display: flex;
                         justify-content: center;
                         align-items: center;
+
                         .rangeTable {
                             border-spacing: 2px;
                             border-collapse: separate;
+
                             td {
                                 width: 6px;
                                 height: 6px;
                             }
+
                             .rangeOrigin {
                                 border: 1px solid #FFF;
                                 background-color: #FFF;
                             }
+
                             .rangeTarget {
                                 border: 1px solid;
                             }
                         }
                     }
                 }
+
                 .positionTagWrap {
                     width: 100px;
                     display: flex;
                     flex-wrap: wrap;
                     gap: 2px;
+
                     >div {
-                        background-color: rgba(0,0,0,0.3);
+                        background-color: rgba(0, 0, 0, 0.3);
                         width: 100%;
                         text-align: center;
                         font-size: 12px;
@@ -185,37 +213,313 @@
                     .positionWrap {
                         height: 20px;
                     }
+
                     .tagWrap {
                         height: 38px;
                         column-gap: 3px;
                         line-height: 12px;
                     }
                 }
+
+
             }
 
-            .choosePhasesWrap {
-                margin-top: 30px;
-                ul {
+
+        }
+    }
+
+    .operatorBasicInfoWrap {
+        margin-top: 20px;
+        padding-bottom: 80px;
+
+        .operatorBasicInfoBox {
+            padding: 15px;
+            background-color: rgba(0, 0, 0, 0.25);
+            -webkit-box-shadow: 1px 1px 8px 0px rgba(0, 0, 0, 0.72);
+            box-shadow: 1px 1px 8px 0px rgba(0, 0, 0, 0.72);
+
+            .operatorBasicInfoTitle {
+                font-weight: bold;
+                font-size: 18px;
+                color: #FFF;
+            }
+
+            .operatorBoxContent {
+                .operatorBoxTitle {
+                    margin-bottom: 5px;
+                    font-size: 0.9rem;
+                    color: #FFF;
+                }
+
+                margin-bottom: 10px;
+
+                &:last-child {
+                    margin-bottom: 0;
+                }
+
+                .contentBox {
+                    @include operatorDetailBox() {
+                        font-size: 0.8em;
+                        margin-bottom: 10px;
+                    }
+
+                    &:last-child {
+                        margin-bottom: 0;
+                    }
+                }
+
+                .potentialBox {
                     display: flex;
+                    flex-direction: column;
                     gap: 5px;
-                    li {
-                        border: 1px solid rgba(255, 255, 255, 0.8);
-                        padding: 5px;
-                        background-color: rgba(0,0,0,0.3);
-                        cursor: pointer;
-                        &.active {
-                            border: 1px solid #FFF;
-                            background-color: #000;
+
+                    >div {
+                        display: flex;
+                        gap: 5px;
+
+                        p {
+                            margin: 0;
                         }
-                        &:hover {
-                            border: 1px solid #FFF;
-                            background-color: #000;
+                    }
+                }
+
+                .tanlentBoxWrap {
+                    margin-top: 40px;
+
+                    .tanlentBox {
+                        @include operatorDetailBox() {
+                            flex-direction: column;
+                            margin-bottom: 40px;
+                            position: relative;
+
+                            &:last-child {
+                                margin-bottom: 0;
+                            }
+                        }
+
+                        .tanlentTitle {
+                            position: absolute;
+                            top: -20px;
+                            background-color: $content-background-color;
+                            padding: 5px;
+                            border-radius: 5px;
+                            display: inline-block;
+                            margin-bottom: 10px;
+
+                            span {
+                                display: inline-block;
+                                margin-right: 5px;
+                                font-size: 0.9em;
+                            }
+
+                            .tanlentPotentialIcon {
+                                width: 30px;
+                                margin: 0 auto;
+                                background-color: #000;
+                                border-radius: 5px;
+                                display: inline-block;
+                                text-align: center;
+                            }
+                        }
+
+                        .tanlentContent {
+                            padding-top: 20px;
+                            font-size: 0.9rem;
+                        }
+                    }
+                }
+
+
+
+            }
+
+            .statusOutterWrap {
+                .statusInnerWrap {
+                    display: grid;
+                    grid-template-columns: repeat(2, fit-content(50%));
+                    gap: 2px 5px;
+
+                    .statusInfo {
+                        display: grid;
+                        grid-template-columns: repeat(2, 1fr);
+                        gap: 2px;
+                        max-width: 200px;
+
+                        .statusTitle {
+                            background-color: $primary-color;
+                            color: $text-color;
+                            padding: 2px 5px;
+                            width: 90px;
+                            font-size: 0.8em;
+
+                        }
+
+                        .status {
+                            background-color: rgba(255, 255, 255, 0.8);
+                            color: #333;
+                            font-weight: bold;
+                            font-size: 0.8em;
+                            max-width: 120px;
+                        }
+                    }
+                }
+            }
+
+            .infraSkillBoxWrap {
+                margin-top: 30px;
+
+                .infraSkillBox {
+                    @include operatorDetailBox() {
+                        margin-bottom: 30px;
+
+                        &:last-child {
+                            margin-bottom: 0;
+                        }
+
+                        padding-top: 25px;
+                    }
+
+                    position: relative;
+
+                    .infraSkillTitleWrap {
+                        position: absolute;
+                        top: 0;
+                        transform: translateY(-50%);
+
+                        .infraSKillIcon {
+                            width: 30px;
+                            height: 30px;
+                            background-color: black;
+                            border-radius: 50%;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            position: absolute;
+                            left: 0;
+                            top: 0;
+                            z-index: 1;
+                            box-shadow: 0px 2px 1px rgba(0, 0, 0, 0.1), 2px 2px 2px 1px rgba(0, 0, 0, 0.1);
+                        }
+
+                        .infraSkillTitle {
+                            background-color: black;
+                            margin-left: 10px;
+                            padding-left: 25px;
+                            font-size: 0.9em;
+                            padding-right: 10px;
+                            transform: translateY(25%);
+                            border-radius: 5px;
+                            box-shadow: 0px 2px 1px rgba(0, 0, 0, 0.1), 2px 2px 2px 1px rgba(0, 0, 0, 0.1);
                         }
                     }
 
+                    .infraSkillContent {
+                        font-size: 0.9em;
+                    }
+                }
+            }
+
+            .eliteRequirementBoxWrap {
+                margin-top: 20px;
+
+                @include operatorDetailBox() {}
+
+
+                .eliteRequirementBoxTitleWrap {
+                    text-align: center;
+                    background-color: #000;
+                    padding: 5px 0;
+                }
+
+                .eliteRequirementBoxContent {
+                    padding-top: 20px;
+                    display: flex;
+                    flex-wrap: wrap;
+                    align-content: center;
+                    justify-content: center;
+                    gap: 10px;
+
+                    .eliteRequirementBoxItemWrap {
+                        background-color: $container-background-color;
+                        border-radius: 5px;
+                        padding-top: 5px;
+                        overflow: hidden;
+                        .eliteRequirementImageWrap {
+                            width: 90px;
+                            height: 90px;
+                            position: relative;
+                            background-size: contain;
+                            background-position: center;
+                            background-repeat: no-repeat;
+                            margin-bottom: 10px;
+                            img {
+                                position: absolute;
+                                left: 50%;
+                                top: 50%;
+                                transform: translate(-50%, -50%);
+                            }
+
+                            .eliteRequirementItemCount {
+                                position: absolute;
+                                bottom: 0;
+                                right: 0;
+                                background-color: rgba(0, 0, 0, 0.6);
+                                border-radius: 5px;
+                                padding: 2px 6px;
+                                font-weight: bold;
+                                font-size: 0.8em;
+                            }
+                        }
+
+                        .eliteRequirementItemTitle {
+                            text-align: center;
+                            font-size: 0.9em;
+                            padding: 5px 0;
+                            background-color: #000;
+                        }
+                    }
                 }
             }
         }
     }
 
+}
+
+.choosePhasesWrap {
+    ul {
+        display: flex;
+        gap: 5px;
+
+        li {
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            padding: 5px;
+            background-color: rgba(0, 0, 0, 0.3);
+            cursor: pointer;
+
+            &.active {
+                border: 1px solid #FFF;
+                background-color: #000;
+            }
+
+            &:hover {
+                border: 1px solid #FFF;
+                background-color: #000;
+            }
+        }
+
+    }
+}
+
+.levelSliderWrap {
+    display: flex;
+    gap: 10px;
+
+    .levelSlider {
+        display: flex;
+        gap: 10px;
+
+        input[type=number] {
+            width: 60px;
+        }
+    }
 }
