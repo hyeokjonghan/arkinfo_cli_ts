@@ -5,6 +5,18 @@
     font-family: 'Nanum Gothic', sans-serif;
 }
 
+.text-color {
+    color: $active-color;
+}
+
+.danger-color {
+    color: $danger-color;
+}
+
+.under-line {
+    text-decoration: underline;
+}
+
 body {
     overflow-x: hidden;
     overflow-y: overlay;
