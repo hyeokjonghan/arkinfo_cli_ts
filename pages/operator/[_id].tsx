@@ -6,7 +6,7 @@ import style from "@/styles/operator/detail.module.scss"
 import { useContext, useEffect, useLayoutEffect, useRef, useState } from "react"
 import Image from "next/image"
 import { useGetOperatorDetail, getOperatorDetail } from "../api/operator"
-import { OperatorDetail, RangeInfo, SkinInfo, PrintTalentBtn, Candidate } from "@/types/opInfo"
+import { OperatorDetail, RangeInfo, SkinInfo, PrintTalentBtn, Candidate, Phase, LevelStatus } from "@/types/opInfo"
 import { BuffDaum, Infra, InfraType, PrintInfra } from "@/types/infra"
 import StackGrid, { Grid } from "react-stack-grid"
 import { GetServerSidePropsContext } from 'next';
@@ -19,7 +19,7 @@ import { replaceInfraDescription, replaceTalentDescription } from "@/lib/replace
 type ssrType = {
     operator: OperatorDetail,
     infra: InfraType,
-    itemInfo: any
+    itemInfo: Items
 }
 
 type ssrResultType = {
@@ -27,7 +27,6 @@ type ssrResultType = {
 }
 
 export default function OperatorDetailPage({ results }: ssrResultType) {
-
     const router = useRouter()
     const [korFontsize, setKorFontSize] = useState<string>('36px')
     const [korLetterSpacing, setKorLetterSpacing] = useState<string>('-0.5px')
@@ -58,7 +57,9 @@ export default function OperatorDetailPage({ results }: ssrResultType) {
     const [printTalentBtn, setPrintTalentBtn] = useState<PrintTalentBtn>({ phase: [], potentialRank: [] })
     const [printTalent, setPrintTalent] = useState<Candidate[]>([])
 
-
+    const [choosePhaseElite, setChoosePhaseElite] = useState(0)
+    const [choosePhase, setChoosePhase] = useState<Phase>(operator.phases[0])
+    const [levelStatus, setLevelStatus] = useState<LevelStatus>(operator.phases[0].attributesKeyFrames[0].data)
 
 
     // 초기 데이터 세팅
@@ -154,16 +155,15 @@ export default function OperatorDetailPage({ results }: ssrResultType) {
 
             setPrintTalentBtn(tempSearchTalent)
         }
-        console.dir(operator)
 
 
     }, [operator])
 
     useEffect(() => {
-        if(printTalentBtn.phase) {
+        if (printTalentBtn.phase) {
             setChooseTalentElite(Math.min(...printTalentBtn.phase))
         }
-        if(printTalentBtn.potentialRank) {
+        if (printTalentBtn.potentialRank) {
             setChooseTalentPotential(Math.min(...printTalentBtn.potentialRank))
         }
         changeTalent()
@@ -230,16 +230,6 @@ export default function OperatorDetailPage({ results }: ssrResultType) {
 
             let checkSearched = candidates.candidates.filter(obj => obj.requiredPotentialRank <= chooseTalentPotential && obj.unlockCondition.phase <= chooseTalentElite)
                 .reduce((prev: Candidate | null, current: Candidate) => {
-                    // console.log("check init ::")
-                    // console.log(current)
-
-                    // console.log("check of/off")
-                    // console.log("current.unlockCondition.phase <= chooseTalentElite ==> ", current.unlockCondition.phase <= chooseTalentElite)
-                    // console.log("current.requiredPotentialRank <= chooseTalentPotential ==> ", current.requiredPotentialRank <= chooseTalentPotential)
-                    // if(prev) {
-                    //     console.log("(prev.unlockCondition.phase < current.unlockCondition.phase) ==> ", (prev.unlockCondition.phase < current.unlockCondition.phase))
-                    //     console.log("(prev.requiredPotentialRank < current.requiredPotentialRank) ==> ", (prev.requiredPotentialRank < current.requiredPotentialRank))
-                    // }
 
                     if (
                         (current.unlockCondition.phase <= chooseTalentElite) &&
@@ -387,6 +377,44 @@ export default function OperatorDetailPage({ results }: ssrResultType) {
 
     }, [nowRange])
 
+    useEffect(() => {
+        setLevelStatus(choosePhase.attributesKeyFrames[0].data)
+        setLevel(1)
+    }, [choosePhase])
+
+
+    useEffect(() => {
+        // maxLevel :: choosePhase.maxLevel
+        let levelGap = choosePhase.maxLevel - 1
+
+        // ATK, def, maxHP만 계산하면 됨
+        let gapAtk = (choosePhase.attributesKeyFrames[1].data.atk - choosePhase.attributesKeyFrames[0].data.atk) / levelGap
+        let gapDef = (choosePhase.attributesKeyFrames[1].data.def - choosePhase.attributesKeyFrames[0].data.def) / levelGap
+        let gapMaxHp = (choosePhase.attributesKeyFrames[1].data.maxHp - choosePhase.attributesKeyFrames[0].data.maxHp) / levelGap
+
+        let tempLevelStatus = { ...levelStatus }
+        tempLevelStatus.atk = Math.round(choosePhase.attributesKeyFrames[0].data.atk + (gapAtk * (level - 1)))
+        tempLevelStatus.def = Math.round(choosePhase.attributesKeyFrames[0].data.def + (gapDef * (level - 1)))
+        tempLevelStatus.maxHp = Math.round(choosePhase.attributesKeyFrames[0].data.maxHp + (gapMaxHp * (level - 1)))
+
+        setLevelStatus(tempLevelStatus)
+    }, [level])
+
+    const clickChoosePhaseElite = (phase: number) => {
+        setChoosePhaseElite(phase)
+        setChoosePhase(operator.phases[phase])
+    }
+
+    const levelInputBind = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (!e.target.value || parseInt(e.target.value) <= 0) {
+            setLevel(1)
+        } else if (parseInt(e.target.value) > choosePhase.maxLevel) {
+            setLevel(choosePhase.maxLevel)
+        } else {
+            setLevel(parseInt(e.target.value))
+        }
+    }
+
     return <>
         <PageLayout>
             <ContentLayout>
@@ -523,17 +551,16 @@ export default function OperatorDetailPage({ results }: ssrResultType) {
 
                             <div className={style.operatorBoxContent}>
                                 <h5 className={style.operatorBoxTitle}>Choose Elite</h5>
-                                {
-                                    operator && <>
-                                        <div className={style.choosePhasesWrap}>
-                                            <ul>
-                                                {operator.phases.length >= 1 ? <li className={chooseElite === 0 ? style.active : ''}><Image src="/sample/elite/0-s.png" width={40} height={40} alt="elite-0"></Image></li> : <></>}
-                                                {operator.phases.length >= 2 ? <li className={chooseElite === 1 ? style.active : ''}><Image src="/sample/elite/1-s.png" width={40} height={40} alt="elite-1"></Image></li> : <></>}
-                                                {operator.phases.length >= 3 ? <li className={chooseElite === 2 ? style.active : ''}><Image src="/sample/elite/2-s.png" width={40} height={40} alt="elite-2"></Image></li> : <></>}
-                                            </ul>
-                                        </div>
-                                    </>
-                                }
+                                <div className={style.choosePhasesWrap}>
+                                    <ul>
+                                        {operator.phases.map((phase, index) => {
+                                            return <>
+                                                <li key={index} className={choosePhaseElite === index ? style.active : ''}><Image src={`/sample/elite/${index}-s.png`} width={40} height={40} alt="elite-0" onClick={() => clickChoosePhaseElite(index)}></Image></li>
+                                            </>
+                                        })}
+
+                                    </ul>
+                                </div>
                             </div>
 
                             <div className={style.operatorBoxContent}>
@@ -545,11 +572,11 @@ export default function OperatorDetailPage({ results }: ssrResultType) {
                                                 value={level}
                                                 onChange={changeEvent => setLevel(parseInt(changeEvent.target.value))}
                                                 min={1}
-                                                max={50}>
+                                                max={choosePhase.maxLevel}>
                                             </RangeSlider>
                                         </div>
                                         <div>
-                                            <input type="number" className="form-control" value={level}></input>
+                                            <input type="number" className="form-control" value={level} onChange={levelInputBind}></input>
                                         </div>
                                     </div>
                                 </div>
@@ -562,75 +589,78 @@ export default function OperatorDetailPage({ results }: ssrResultType) {
 
                                         <div className={style.statusInfo}>
                                             <div className={style.statusTitle}>최대 체력</div>
-                                            <div className={style.status}>10</div>
+                                            <div className={style.status}>{levelStatus.maxHp}</div>
                                         </div>
 
                                         <div className={style.statusInfo}>
                                             <div className={style.statusTitle}>재배치</div>
-                                            <div className={style.status}>10</div>
+                                            <div className={style.status}>{levelStatus.respawnTime}</div>
                                         </div>
 
                                         <div className={style.statusInfo}>
                                             <div className={style.statusTitle}>공격</div>
-                                            <div className={style.status}>10</div>
+                                            <div className={style.status}>{levelStatus.atk}</div>
                                         </div>
 
                                         <div className={style.statusInfo}>
                                             <div className={style.statusTitle}>배치 코스트</div>
-                                            <div className={style.status}>10</div>
+                                            <div className={style.status}>{levelStatus.cost}</div>
                                         </div>
 
                                         <div className={style.statusInfo}>
                                             <div className={style.statusTitle}>방어</div>
-                                            <div className={style.status}>10</div>
+                                            <div className={style.status}>{levelStatus.def}</div>
                                         </div>
 
                                         <div className={style.statusInfo}>
                                             <div className={style.statusTitle}>저지 가능 수</div>
-                                            <div className={style.status}>10</div>
+                                            <div className={style.status}>{levelStatus.blockCnt}</div>
                                         </div>
 
                                         <div className={style.statusInfo}>
                                             <div className={style.statusTitle}>마법 저항</div>
-                                            <div className={style.status}>10</div>
+                                            <div className={style.status}>{levelStatus.magicResistance}</div>
                                         </div>
 
                                         <div className={style.statusInfo}>
                                             <div className={style.statusTitle}>공격 속도</div>
-                                            <div className={style.status}>10</div>
+                                            <div className={style.status}>{levelStatus.baseAttackTime}</div>
                                         </div>
 
                                     </div>
                                 </div>
 
-                                <div className={style.eliteRequirementBoxWrap}>
-                                    <div className={style.eliteRequirementBoxTitleWrap}>
-                                        정예화 필요 재료
-                                    </div>
-                                    <div className={style.eliteRequirementBoxContent}>
-
-                                        <div className={style.eliteRequirementBoxItemWrap}>
-                                            <div className={style.eliteRequirementImageWrap} style={{ backgroundImage: `url(/sample/material/bg/item-1.png)` }}>
-                                                <Image src={`/sample/item/MTL_SL_DS.png`} alt={`item-image`} width={70} height={70}></Image>
-                                                <div className={style.eliteRequirementItemCount}>7</div>
-                                            </div>
-                                            <div className={style.eliteRequirementItemTitle}>
-                                                용문폐
-                                            </div>
+                                {
+                                    choosePhase.evolveCost && <div className={style.eliteRequirementBoxWrap}>
+                                        <div className={style.eliteRequirementBoxTitleWrap}>
+                                            정예화 필요 재료
                                         </div>
+                                        <div className={style.eliteRequirementBoxContent}>
 
-                                        <div className={style.eliteRequirementBoxItemWrap}>
-                                            <div className={style.eliteRequirementImageWrap} style={{ backgroundImage: `url(/sample/material/bg/item-1.png)` }}>
-                                                <Image src={`/sample/item/MTL_SL_DS.png`} alt={`item-image`} width={70} height={70}></Image>
-                                                <div className={style.eliteRequirementItemCount}>180000</div>
-                                            </div>
-                                            <div className={style.eliteRequirementItemTitle}>
-                                                용문폐
-                                            </div>
+                                            {
+                                                choosePhase.evolveCost.map((item) => {
+                                                    let saerchItem = results.itemInfo.find(obj => obj.itemId === item.id)
+                                                    if(saerchItem) {
+                                                        return <>
+                                                        <div className={style.eliteRequirementBoxItemWrap}>
+                                                            <div className={style.eliteRequirementImageWrap} style={{ backgroundImage: `url('${process.env.NEXT_PUBLIC_CLOUD_URL}material/bg/item-${saerchItem.rarity+1}.png')` }}>
+                                                                <Image src={`${process.env.NEXT_PUBLIC_CLOUD_URL}items/${saerchItem.iconId}.png`} alt={`item-image`} width={70} height={70}></Image>
+                                                                <div className={style.eliteRequirementItemCount}>{item.count}</div>
+                                                            </div>
+                                                            <div className={style.eliteRequirementItemTitle}>
+                                                                {saerchItem.name}
+                                                            </div>
+                                                        </div>
+                                                    </>
+                                                    }
+                                                })
+                                            }
+
+
                                         </div>
-
                                     </div>
-                                </div>
+                                }
+
 
                             </div>
 
@@ -717,22 +747,22 @@ export default function OperatorDetailPage({ results }: ssrResultType) {
                                 {printTalent.map(talent => {
                                     return <>
                                         <div className={style.tanlentBoxWrap}>
-                                        <div className={style.tanlentBox}>
-                                            <div className={style.tanlentTitle}>
-                                                <span>{talent.name}</span>
-                                                <div className={style.tanlentPotentialIcon}>
-                                                    <Image src={`/sample/elite/${talent.unlockCondition.phase}-s.png`} alt='potential-icon' width={18} height={18}></Image>
+                                            <div className={style.tanlentBox}>
+                                                <div className={style.tanlentTitle}>
+                                                    <span>{talent.name}</span>
+                                                    <div className={style.tanlentPotentialIcon}>
+                                                        <Image src={`/sample/elite/${talent.unlockCondition.phase}-s.png`} alt='potential-icon' width={18} height={18}></Image>
+                                                    </div>
+                                                    <div className={style.tanlentPotentialIcon}>
+                                                        <Image src={`/sample/potential/${talent.requiredPotentialRank + 1}.png`} alt='potential-icon' width={18} height={18}></Image>
+                                                    </div>
                                                 </div>
-                                                <div className={style.tanlentPotentialIcon}>
-                                                    <Image src={`/sample/potential/${talent.requiredPotentialRank+1}.png`} alt='potential-icon' width={18} height={18}></Image>
-                                                </div>
+                                                <div className={style.tanlentContent} dangerouslySetInnerHTML={{ __html: replaceTalentDescription(talent.description) }}></div>
                                             </div>
-                                            <div className={style.tanlentContent} dangerouslySetInnerHTML={{__html:replaceTalentDescription(talent.description)}}></div>
                                         </div>
-                                    </div>
                                     </>
                                 })}
-                                
+
 
                             </div>
 
@@ -837,7 +867,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     // Item 정보 가져오기
     let itemInfo: Items | null = null
     try {
-        const itemInfo = await getItemInfo(itemIds)
+        itemInfo = await getItemInfo(itemIds)
     } catch (err: any) {
 
     }

@@ -56,10 +56,10 @@ export interface OperatorDetail {
   
   export interface AttributesKeyFrame {
     level: number
-    data: Data
+    data: LevelStatus
   }
   
-  export interface Data {
+  export interface LevelStatus {
     maxHp: number
     atk: number
     def: number
