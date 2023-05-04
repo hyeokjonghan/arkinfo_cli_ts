@@ -59,13 +59,14 @@ function OperatorPage() {
 
 
     useEffect(() => {
-        if(searchOpValue.lastSearchOption.name !== searchOpValue.searchOption.name) {
-            setFirstPage()
-        }
-        if(operatorListState.length === 0 || !_.isEqual(searchOpValue.searchOption, searchOpValue.lastSearchOption)) {
-            setFirstPage()
-        }
-    }, [router.query, searchOpValue.getSearchOption.page, searchOpValue.getSearchOption.rarity, searchOpValue.getSearchOption.profession])
+        setFirstPage()
+        // if(searchOpValue.getLastSearchOption.name !== searchOpValue.getSearchOption.name) {
+        //     setFirstPage()
+        // }
+        // if(operatorListState.length === 0 || !_.isEqual(searchOpValue.searchOption, searchOpValue.lastSearchOption)) {
+        //     setFirstPage()
+        // }
+    }, [router.query, searchOpValue.searchOption.name,  searchOpValue.getSearchOption.rarity, searchOpValue.getSearchOption.profession])
 
     // 등급 선택시 Filter 적용
     const setSelectedFilterRarity = (item: opFilterType) => {

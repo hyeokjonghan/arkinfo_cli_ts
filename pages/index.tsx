@@ -24,7 +24,9 @@ export default function Home() {
       title:'오퍼레이터 목록',
       path:'/operator',
       content:[
-        "개발 준비중 입니다."
+        "스킨 미리보기, 기본정보, 공격범위, 정예화 재료, 인프라 스킬 제공",
+        "잠재능력 및 신뢰도 정보, 재능정보 제공",
+        "개발 예정 : 모듈 정보, 스킬 정보, live 2D Skin Play"
       ]
     },
     {
