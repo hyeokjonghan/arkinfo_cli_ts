@@ -7,7 +7,6 @@ import Image from "next/image"
 import _ from 'lodash'
 import InfiniteScroll from 'react-infinite-scroll-component'
 import rootStore from "@/store/rootStore";
-import { SearchOptionType } from "@/store/searchOp";
 import {observer} from "mobx-react"
 import { useGetOperatorList } from "../api/operator";
 

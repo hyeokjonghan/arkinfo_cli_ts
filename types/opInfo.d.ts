@@ -1,3 +1,4 @@
+import {Item} from "@/types/item"
 export interface OpInfo {
     default_card_img: string,
     isRecruitment: boolean,
@@ -55,10 +56,10 @@ export interface OperatorDetail {
   
   export interface AttributesKeyFrame {
     level: number
-    data: Data
+    data: LevelStatus
   }
   
-  export interface Data {
+  export interface LevelStatus {
     maxHp: number
     atk: number
     def: number
@@ -87,6 +88,7 @@ export interface OperatorDetail {
     id: string
     count: number
     type: string
+    item?: Item
   }
   
   export interface Skill {
@@ -275,3 +277,7 @@ export interface OperatorDetail {
     onPeriod: number
   }
   
+  export interface PrintTalentBtn {
+    phase: number[],
+    potentialRank: number[]
+  }

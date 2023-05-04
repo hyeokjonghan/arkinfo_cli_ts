@@ -1,13 +1,32 @@
+import RangeSlider from 'react-bootstrap-range-slider';
 import ContentLayout from "@/layout/contentLayout"
 import PageLayout from "@/layout/pageLayout"
 import { useRouter } from "next/router"
 import style from "@/styles/operator/detail.module.scss"
-import { useEffect, useState } from "react"
+import { useContext, useEffect, useLayoutEffect, useRef, useState } from "react"
 import Image from "next/image"
-import { useGetOperatorDetail } from "../api/operator"
-import { OperatorDetail, RangeInfo, SkinInfo } from "@/types/opInfo"
+import { useGetOperatorDetail, getOperatorDetail } from "../api/operator"
+import { OperatorDetail, RangeInfo, SkinInfo, PrintTalentBtn, Candidate, Phase, LevelStatus } from "@/types/opInfo"
+import { BuffDaum, Infra, InfraType, PrintInfra } from "@/types/infra"
+import StackGrid, { Grid } from "react-stack-grid"
+import { GetServerSidePropsContext } from 'next';
+import { getInfraInfo } from '../api/infra';
+import { getItemInfo } from '../api/item';
+import { Items } from '@/types/item';
 
-export default function OperatorDetail() {
+import { replaceInfraDescription, replaceTalentDescription } from "@/lib/replaceText"
+
+type ssrType = {
+    operator: OperatorDetail,
+    infra: InfraType,
+    itemInfo: Items
+}
+
+type ssrResultType = {
+    results: ssrType
+}
+
+export default function OperatorDetailPage({ results }: ssrResultType) {
     const router = useRouter()
     const [korFontsize, setKorFontSize] = useState<string>('36px')
     const [korLetterSpacing, setKorLetterSpacing] = useState<string>('-0.5px')
@@ -16,8 +35,162 @@ export default function OperatorDetail() {
     const [nowRange, setNowRange] = useState<RangeInfo>()
     const [nowPhases, setNowPhases] = useState({})
     const [printRangeJsx, setPrintRnageJsx] = useState<(number | string)[][]>([])
-    const settingRangegrid:(number | string)[][] = []
+    const settingRangegrid: (number | string)[][] = []
     const [classImage, setClassImage] = useState(``)
+    const [level, setLevel] = useState(1)
+    const [clientWidth, setClientWidth] = useState(0)
+    const detailWrapRef = useRef<HTMLInputElement>(null);
+    const [operator, setOperator] = useState(results.operator)
+    const [trustInfo, setTrustInfo] = useState(results.operator.favorKeyFrames.find(obj => obj.level === 50)?.data)
+
+    const [printInfra, setPrintInfra] = useState<PrintInfra[]>([])
+    const [chooseInfraElite, setChooseInfraElite] = useState(0)
+    const searchId = operator.potentialItemId.slice(2)
+
+    const [printFirstInfra, setPrintFirstInfra] = useState<Infra | null>(null)
+    const [printSecondInfra, setPrintSecondInfra] = useState<Infra | null>(null)
+
+    const [stackGrid, setStackGrid] = useState<Grid | null>(null)
+
+    const [chooseTalentElite, setChooseTalentElite] = useState(0)
+    const [chooseTalentPotential, setChooseTalentPotential] = useState(0)
+    const [printTalentBtn, setPrintTalentBtn] = useState<PrintTalentBtn>({ phase: [], potentialRank: [] })
+    const [printTalent, setPrintTalent] = useState<Candidate[]>([])
+
+    const [choosePhaseElite, setChoosePhaseElite] = useState(0)
+    const [choosePhase, setChoosePhase] = useState<Phase>(operator.phases[0])
+    const [levelStatus, setLevelStatus] = useState<LevelStatus>(operator.phases[0].attributesKeyFrames[0].data)
+
+
+    // 초기 데이터 세팅
+    useEffect(() => {
+        if (operator.skinInfo) {
+            setPreviewImage(`url('${process.env.NEXT_PUBLIC_CLOUD_URL}characters/${operator.skinInfo[0]['portraitId'].replace('#', '%23')}.png')`)
+        }
+
+        if (operator.phases) {
+            setNowPhases(operator.phases[0])
+        }
+
+        if (operator.profession) {
+            let tempProfession = operator.profession
+            switch (tempProfession) {
+                case 'TANK':
+                    tempProfession = 'defender'
+                    break;
+                case 'MEDIC':
+                    tempProfession = 'medic'
+                    break;
+                case 'WARRIOR':
+                    tempProfession = 'guard'
+                    break;
+                case 'SPECIAL':
+                    tempProfession = 'specialist'
+                    break;
+                case 'PIONEER':
+                    tempProfession = 'vanguard'
+                    break;
+                case 'SNIPER':
+                    tempProfession = 'sniper'
+                    break;
+                case 'CASTER':
+                    tempProfession = 'caster'
+                    break;
+                case 'SUPPORT':
+                    tempProfession = 'supporter'
+                    break;
+            }
+            setClassImage(`url('${process.env.NEXT_PUBLIC_CLOUD_URL}classes/class_${tempProfession}.png')`)
+        }
+
+        if (operator.name) {
+            if (operator.name.length > 10) {
+                setKorFontSize('30px')
+                setKorLetterSpacing('-4px')
+            }
+        }
+
+        if (operator.rangeInfo) {
+            operator.rangeInfo.map((range) => {
+                if (range.id === operator.phases[0].rangeId) {
+                    setNowRange(range)
+                    return false
+                }
+            })
+        }
+
+        if (results.infra) {
+            let tempCond: PrintInfra[] = []
+
+            results.infra.chars[searchId].buffChar.map(item => {
+                item.buffData.map(buff => {
+                    buff.infra = results.infra.infra[buff.buffId]
+                    let checkCond = tempCond.find(object => object.phase === buff.cond.phase)
+                    if (!checkCond) {
+                        tempCond.push({ phase: buff.cond.phase })
+                    }
+                })
+
+            })
+
+            setPrintInfra(tempCond)
+        }
+
+        if (operator.talents) {
+            let tempSearchTalent: PrintTalentBtn = {
+                phase: [],
+                potentialRank: []
+            }
+
+            operator.talents.map(talent => {
+                talent.candidates.map(item => {
+                    if (tempSearchTalent.phase.indexOf(item.unlockCondition.phase) === -1) {
+                        tempSearchTalent.phase = [...tempSearchTalent.phase, item.unlockCondition.phase]
+                    }
+                    if (tempSearchTalent.potentialRank.indexOf(item.requiredPotentialRank) === -1) {
+                        tempSearchTalent.potentialRank = [...tempSearchTalent.potentialRank, item.requiredPotentialRank]
+                    }
+                })
+            })
+
+            setPrintTalentBtn(tempSearchTalent)
+        }
+
+
+    }, [operator])
+
+    useEffect(() => {
+        if (printTalentBtn.phase) {
+            setChooseTalentElite(Math.min(...printTalentBtn.phase))
+        }
+        if (printTalentBtn.potentialRank) {
+            setChooseTalentPotential(Math.min(...printTalentBtn.potentialRank))
+        }
+        changeTalent()
+    }, [printTalentBtn])
+
+    useEffect(() => {
+        changePrintInfra()
+    }, [chooseInfraElite])
+
+    useEffect(() => {
+        if (stackGrid) {
+            stackGrid.updateLayout()
+        }
+    }, [printFirstInfra, printSecondInfra, printTalentBtn, printTalent])
+
+    useLayoutEffect(() => {
+        const handleResize = () => {
+            if (detailWrapRef.current) {
+                setClientWidth(detailWrapRef.current.offsetWidth)
+            }
+
+        }
+
+        handleResize()
+
+        window.addEventListener("resize", handleResize)
+    }, [])
 
     const rangeGrideInfo = {
         minRow: 0,
@@ -27,75 +200,8 @@ export default function OperatorDetail() {
         rangeInfo: {} as RangeInfo
     }
 
-    // GET Operator Data
-    const getOperatorDetailSuccess = (data:OperatorDetail) => {
-        if(data) {
-            if(data.skinInfo) {
-                setPreviewImage(`url('${process.env.NEXT_PUBLIC_CLOUD_URL}characters/${data.skinInfo[0]['portraitId'].replace('#', '%23')}.png')`)
-            }
-
-            if(data.phases) {
-                setNowPhases(data.phases[0])
-            }
-
-            if (data.profession) {
-                let tempProfession = data.profession
-                switch (tempProfession) {
-                    case 'TANK':
-                        tempProfession = 'defender'
-                        break;
-                    case 'MEDIC':
-                        tempProfession = 'medic'
-                        break;
-                    case 'WARRIOR':
-                        tempProfession = 'guard'
-                        break;
-                    case 'SPECIAL':
-                        tempProfession = 'specialist'
-                        break;
-                    case 'PIONEER':
-                        tempProfession = 'vanguard'
-                        break;
-                    case 'SNIPER':
-                        tempProfession = 'sniper'
-                        break;
-                    case 'CASTER':
-                        tempProfession = 'caster'
-                        break;
-                    case 'SUPPORT':
-                        tempProfession = 'supporter'
-                        break; 
-                }
-                setClassImage(`url('${process.env.NEXT_PUBLIC_CLOUD_URL}classes/class_${tempProfession}.png')`)
-            }
-
-            if (data.name) {
-                if (data.name.length > 10) {
-                    setKorFontSize('30px')
-                    setKorLetterSpacing('-4px')
-                }
-            }
-    
-            if (data.rangeInfo) {
-                data.rangeInfo.map((range) => {
-                    if (range.id === data.phases[0].rangeId) {
-                        setNowRange(range)
-                        return false
-                    }
-                })
-            }
-        }
-        
-    }
-
-    const getOperatorDetailError = () => {
-        // 오류 처리
-    }
-
-    const {isLoading, isError, data: operator, error} = useGetOperatorDetail(getOperatorDetailError, getOperatorDetailSuccess, router.query._id as string)
-
     // SkinChange
-    const changeSkinPreview = (skinInfo:any) => {
+    const changeSkinPreview = (skinInfo: any) => {
         setPreviewImage(`url('${process.env.NEXT_PUBLIC_CLOUD_URL}characters/${skinInfo['portraitId'].replace('#', '%23')}.png')`)
     }
 
@@ -105,26 +211,99 @@ export default function OperatorDetail() {
         changeElite(elite)
     }
 
-    const changeElite = (elite:number) => {
-        if(operator) {
-            switch(elite) {
+    const clickInfraElite = (elite: number) => {
+        setChooseInfraElite(elite)
+    }
+
+    const clickTalentElite = (elite: number) => {
+        setChooseTalentElite(elite)
+    }
+
+    const clickTalentPotential = (potential: number) => {
+        setChooseTalentPotential(potential)
+
+    }
+
+    const changeTalent = () => {
+        let printTalentSaerch: Candidate[] = []
+        operator.talents.map(candidates => {
+
+            let checkSearched = candidates.candidates.filter(obj => obj.requiredPotentialRank <= chooseTalentPotential && obj.unlockCondition.phase <= chooseTalentElite)
+                .reduce((prev: Candidate | null, current: Candidate) => {
+
+                    if (
+                        (current.unlockCondition.phase <= chooseTalentElite) &&
+                        (current.requiredPotentialRank <= chooseTalentPotential) &&
+                        (!prev || (prev.unlockCondition.phase < current.unlockCondition.phase) || (prev.requiredPotentialRank < current.requiredPotentialRank))) {
+                        // 조건문 검사 다시 해야 함.. 이게 맞나?
+                        return current
+                    }
+                    return prev
+                }, null)
+
+
+            if (checkSearched) {
+                printTalentSaerch = [...printTalentSaerch, checkSearched]
+            }
+
+        })
+
+        setPrintTalent(printTalentSaerch)
+    }
+
+
+    const changePrintInfra = () => {
+        // 가장 큰 값을 찾는다.
+        let printFirstInfraSearch = results.infra.chars[searchId].buffChar[0].buffData.filter(obj => obj.cond.phase <= chooseInfraElite)
+            .reduce((prev: BuffDaum | null, current: BuffDaum) => {
+                if (current.cond.phase <= chooseInfraElite && (!prev || prev.cond.phase < current.cond.phase)) {
+                    return current
+                }
+                return prev
+            }, null)
+
+        if (!printFirstInfraSearch) {
+            setPrintFirstInfra(null)
+        } else {
+            setPrintFirstInfra(printFirstInfraSearch?.infra as Infra)
+        }
+
+        let printSecondInfraSearch = results.infra.chars[searchId].buffChar[1].buffData.filter(obj => obj.cond.phase <= chooseInfraElite)
+            .reduce((prev: BuffDaum | null, current: BuffDaum) => {
+                if (current.cond.phase <= chooseInfraElite && (!prev || prev.cond.phase < current.cond.phase)) {
+                    return current
+                }
+                return prev
+            }, null)
+
+        if (!printSecondInfraSearch) {
+            setPrintSecondInfra(null)
+        } else {
+            setPrintSecondInfra(printSecondInfraSearch?.infra as Infra)
+        }
+
+    }
+
+    const changeElite = (elite: number) => {
+        if (operator) {
+            switch (elite) {
                 case 0:
                     setNowPhases(operator.phases[0])
-                break;
+                    break;
                 case 1:
                     setNowPhases(operator.phases[1])
-                break;
+                    break;
                 case 2:
                     setNowPhases(operator.phases[2])
-                break;
+                    break;
             }
             changeRangeElite(elite)
         }
     }
 
-    const changeRangeElite = (elite:number) => {
-        if(operator) {
-            operator.rangeInfo.map((range:RangeInfo) => {
+    const changeRangeElite = (elite: number) => {
+        if (operator) {
+            operator.rangeInfo.map((range: RangeInfo) => {
                 if (range.id === operator.phases[elite].rangeId) {
                     setNowRange(range)
                     return false
@@ -133,7 +312,7 @@ export default function OperatorDetail() {
         }
     }
 
-    const transferPosition = (position:string) => {
+    const transferPosition = (position: string) => {
         switch (position) {
             case 'MELEE':
                 return '근거리'
@@ -145,6 +324,10 @@ export default function OperatorDetail() {
                 break;
         }
     }
+
+    useEffect(() => {
+        changeTalent()
+    }, [chooseTalentElite, chooseTalentPotential])
 
     useEffect(() => {
         setPrintRnageJsx([])
@@ -193,19 +376,57 @@ export default function OperatorDetail() {
         }
 
     }, [nowRange])
-    
+
+    useEffect(() => {
+        setLevelStatus(choosePhase.attributesKeyFrames[0].data)
+        setLevel(1)
+    }, [choosePhase])
+
+
+    useEffect(() => {
+        // maxLevel :: choosePhase.maxLevel
+        let levelGap = choosePhase.maxLevel - 1
+
+        // ATK, def, maxHP만 계산하면 됨
+        let gapAtk = (choosePhase.attributesKeyFrames[1].data.atk - choosePhase.attributesKeyFrames[0].data.atk) / levelGap
+        let gapDef = (choosePhase.attributesKeyFrames[1].data.def - choosePhase.attributesKeyFrames[0].data.def) / levelGap
+        let gapMaxHp = (choosePhase.attributesKeyFrames[1].data.maxHp - choosePhase.attributesKeyFrames[0].data.maxHp) / levelGap
+
+        let tempLevelStatus = { ...levelStatus }
+        tempLevelStatus.atk = Math.round(choosePhase.attributesKeyFrames[0].data.atk + (gapAtk * (level - 1)))
+        tempLevelStatus.def = Math.round(choosePhase.attributesKeyFrames[0].data.def + (gapDef * (level - 1)))
+        tempLevelStatus.maxHp = Math.round(choosePhase.attributesKeyFrames[0].data.maxHp + (gapMaxHp * (level - 1)))
+
+        setLevelStatus(tempLevelStatus)
+    }, [level])
+
+    const clickChoosePhaseElite = (phase: number) => {
+        setChoosePhaseElite(phase)
+        setChoosePhase(operator.phases[phase])
+    }
+
+    const levelInputBind = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (!e.target.value || parseInt(e.target.value) <= 0) {
+            setLevel(1)
+        } else if (parseInt(e.target.value) > choosePhase.maxLevel) {
+            setLevel(choosePhase.maxLevel)
+        } else {
+            setLevel(parseInt(e.target.value))
+        }
+    }
+
     return <>
         <PageLayout>
             <ContentLayout>
-            <div className={style.operatorDetailWrap}>
+                <div className={style.operatorDetailWrap} ref={detailWrapRef}>
                     {/* 스킨 */}
                     <div className={style.skinDefaultInfoWrap}>
                         <div className={style.operatorSkinWrap}>
-                            
+
                             <div className={style.operatorSkinPreviewWrap}>
                                 {
                                     operator &&
-                                        <div className={style.operatorSkin} id="skinPreview" style={{ backgroundImage: previewImage }}></div>
+                                    <div className={style.operatorSkin} id="skinPreview" style={{ backgroundImage: previewImage }}></div>
                                 }
 
 
@@ -243,22 +464,22 @@ export default function OperatorDetail() {
                             </div>
                             {
                                 operator && <>
-                                <div className={style.nameWrap}>
-                                    <div className={style.appellation}>{operator.appellation}</div>
-                                    <div className={style.name} style={{ letterSpacing: korLetterSpacing, fontSize: korFontsize }}>{operator.name}</div>
-                                </div>
+                                    <div className={style.nameWrap}>
+                                        <div className={style.appellation}>{operator.appellation}</div>
+                                        <div className={style.name} style={{ letterSpacing: korLetterSpacing, fontSize: korFontsize }}>{operator.name}</div>
+                                    </div>
                                 </>
                             }
 
                             {
                                 operator && <>
-                                <div className={style.choosePhasesWrap}>
-                                    <ul>
-                                        {operator.phases.length >= 1 ? <li className={chooseElite===0?style.active:''}><Image src="/sample/elite/0-s.png" width={40} height={40} alt="elite-0" onClick={() => clickEliteEvent(0)}></Image></li>:<></>}
-                                        {operator.phases.length >= 2 ? <li className={chooseElite===1?style.active:''}><Image src="/sample/elite/1-s.png" width={40} height={40} alt="elite-1" onClick={() => clickEliteEvent(1)}></Image></li>:<></>}
-                                        {operator.phases.length >= 3 ? <li className={chooseElite===2?style.active:''}><Image src="/sample/elite/2-s.png" width={40} height={40} alt="elite-2" onClick={() => clickEliteEvent(2)}></Image></li>:<></>}
-                                    </ul>
-                                </div>   
+                                    <div className={style.choosePhasesWrap}>
+                                        <ul>
+                                            {operator.phases.length >= 1 ? <li className={chooseElite === 0 ? style.active : ''}><Image src="/sample/elite/0-s.png" width={40} height={40} alt="elite-0" onClick={() => clickEliteEvent(0)}></Image></li> : <></>}
+                                            {operator.phases.length >= 2 ? <li className={chooseElite === 1 ? style.active : ''}><Image src="/sample/elite/1-s.png" width={40} height={40} alt="elite-1" onClick={() => clickEliteEvent(1)}></Image></li> : <></>}
+                                            {operator.phases.length >= 3 ? <li className={chooseElite === 2 ? style.active : ''}><Image src="/sample/elite/2-s.png" width={40} height={40} alt="elite-2" onClick={() => clickEliteEvent(2)}></Image></li> : <></>}
+                                        </ul>
+                                    </div>
                                 </>
                             }
 
@@ -303,7 +524,7 @@ export default function OperatorDetail() {
                                     <div className={style.tagWrap}>
                                         {operator ? <>
                                             {
-                                                operator.tagList.map((tag: string, index:number) => {
+                                                operator.tagList.map((tag: string, index: number) => {
                                                     return <>
                                                         <span key={index}>{tag}</span>
                                                     </>
@@ -316,8 +537,365 @@ export default function OperatorDetail() {
                         </div>
                     </div>
 
+                    <StackGrid
+                        gridRef={grid => setStackGrid(grid)}
+                        className={style.operatorBasicInfoWrap}
+                        columnWidth={clientWidth <= 960 ? '100%' : '50%'}
+                        gutterWidth={15}
+                        gutterHeight={15}
+
+                    >
+
+                        <div className={style.operatorBasicInfoBox}>
+                            <h4 className={style.operatorBasicInfoTitle}>기본 정보</h4>
+
+                            <div className={style.operatorBoxContent}>
+                                <h5 className={style.operatorBoxTitle}>Choose Elite</h5>
+                                <div className={style.choosePhasesWrap}>
+                                    <ul>
+                                        {operator.phases.map((phase, index) => {
+                                            return <>
+                                                <li key={index} className={choosePhaseElite === index ? style.active : ''}><Image src={`/sample/elite/${index}-s.png`} width={40} height={40} alt="elite-0" onClick={() => clickChoosePhaseElite(index)}></Image></li>
+                                            </>
+                                        })}
+
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div className={style.operatorBoxContent}>
+                                <h5 className={style.operatorBoxTitle}>LEVEL</h5>
+                                <div className={style.levelSliderWrap}>
+                                    <div className={style.levelSlider}>
+                                        <div>
+                                            <RangeSlider
+                                                value={level}
+                                                onChange={changeEvent => setLevel(parseInt(changeEvent.target.value))}
+                                                min={1}
+                                                max={choosePhase.maxLevel}>
+                                            </RangeSlider>
+                                        </div>
+                                        <div>
+                                            <input type="number" className="form-control" value={level} onChange={levelInputBind}></input>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className={style.operatorBoxContent}>
+                                <h5 className={style.operatorBoxTitle}>STATUS</h5>
+                                <div className={style.statusOutterWrap}>
+                                    <div className={style.statusInnerWrap}>
+
+                                        <div className={style.statusInfo}>
+                                            <div className={style.statusTitle}>최대 체력</div>
+                                            <div className={style.status}>{levelStatus.maxHp}</div>
+                                        </div>
+
+                                        <div className={style.statusInfo}>
+                                            <div className={style.statusTitle}>재배치</div>
+                                            <div className={style.status}>{levelStatus.respawnTime}</div>
+                                        </div>
+
+                                        <div className={style.statusInfo}>
+                                            <div className={style.statusTitle}>공격</div>
+                                            <div className={style.status}>{levelStatus.atk}</div>
+                                        </div>
+
+                                        <div className={style.statusInfo}>
+                                            <div className={style.statusTitle}>배치 코스트</div>
+                                            <div className={style.status}>{levelStatus.cost}</div>
+                                        </div>
+
+                                        <div className={style.statusInfo}>
+                                            <div className={style.statusTitle}>방어</div>
+                                            <div className={style.status}>{levelStatus.def}</div>
+                                        </div>
+
+                                        <div className={style.statusInfo}>
+                                            <div className={style.statusTitle}>저지 가능 수</div>
+                                            <div className={style.status}>{levelStatus.blockCnt}</div>
+                                        </div>
+
+                                        <div className={style.statusInfo}>
+                                            <div className={style.statusTitle}>마법 저항</div>
+                                            <div className={style.status}>{levelStatus.magicResistance}</div>
+                                        </div>
+
+                                        <div className={style.statusInfo}>
+                                            <div className={style.statusTitle}>공격 속도</div>
+                                            <div className={style.status}>{levelStatus.baseAttackTime}</div>
+                                        </div>
+
+                                    </div>
+                                </div>
+
+                                {
+                                    choosePhase.evolveCost && <div className={style.eliteRequirementBoxWrap}>
+                                        <div className={style.eliteRequirementBoxTitleWrap}>
+                                            정예화 필요 재료
+                                        </div>
+                                        <div className={style.eliteRequirementBoxContent}>
+
+                                            {
+                                                choosePhase.evolveCost.map((item) => {
+                                                    let saerchItem = results.itemInfo.find(obj => obj.itemId === item.id)
+                                                    if(saerchItem) {
+                                                        return <>
+                                                        <div className={style.eliteRequirementBoxItemWrap}>
+                                                            <div className={style.eliteRequirementImageWrap} style={{ backgroundImage: `url('${process.env.NEXT_PUBLIC_CLOUD_URL}material/bg/item-${saerchItem.rarity+1}.png')` }}>
+                                                                <Image src={`${process.env.NEXT_PUBLIC_CLOUD_URL}items/${saerchItem.iconId}.png`} alt={`item-image`} width={70} height={70}></Image>
+                                                                <div className={style.eliteRequirementItemCount}>{item.count}</div>
+                                                            </div>
+                                                            <div className={style.eliteRequirementItemTitle}>
+                                                                {saerchItem.name}
+                                                            </div>
+                                                        </div>
+                                                    </>
+                                                    }
+                                                })
+                                            }
+
+
+                                        </div>
+                                    </div>
+                                }
+
+
+                            </div>
+
+                        </div>
+
+                        <div className={style.operatorBasicInfoBox}>
+                            <h4 className={style.operatorBasicInfoTitle}>잠재능력 및 신뢰도</h4>
+                            <div className={style.operatorBoxContent}>
+                                <h5 className={style.operatorBoxTitle}>특성</h5>
+                                <div className={style.contentBox} >
+                                    <div dangerouslySetInnerHTML={{ __html: operator.description }}></div>
+                                </div>
+                            </div>
+                            <div className={style.operatorBoxContent}>
+                                <h5 className={style.operatorBoxTitle}>잠재능력</h5>
+                                <div className={`${style.contentBox} ${style.potentialBox}`}>
+                                    {operator.potentialRanks.map((item, index) => {
+                                        return <>
+                                            <div>
+                                                <Image key={index} src={`/sample/potential/${index + 1}.png`} alt='potentials-icon' width={20} height={20}></Image>
+                                                <p>{item.description}</p>
+                                            </div>
+                                        </>
+                                    })}
+
+
+                                </div>
+                            </div>
+                            <div className={style.operatorBoxContent}>
+                                <h5 className={style.operatorBoxTitle}>신뢰도</h5>
+                                <div className={style.contentBox}>
+                                    {
+                                        Object.entries(trustInfo as Record<string, any>).map(([key, value]) => {
+                                            if (value) {
+                                                return <div key={key}>
+                                                    {key}:+{value}
+                                                </div>
+                                            }
+                                        })
+                                    }
+
+                                </div>
+                            </div>
+                        </div>
+
+                        {printTalent && <div className={style.operatorBasicInfoBox}>
+                            <h4 className={style.operatorBasicInfoTitle}>재능</h4>
+                            <div className={style.operatorBoxContent}>
+                                <h5 className={style.operatorBoxTitle}>Choose Elite</h5>
+                                <div className={style.choosePhasesWrap}>
+                                    <ul>
+                                        {
+                                            printTalentBtn.phase.map(phase => {
+                                                return <>
+                                                    <li className={chooseTalentElite === phase ? style.active : ''}><Image src={`/sample/elite/${phase}-s.png`} width={40} height={40} alt="elite-0" onClick={() => { clickTalentElite(phase) }}></Image></li>
+                                                </>
+                                            })
+                                        }
+
+
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div className={style.operatorBoxContent}>
+                                <h5 className={style.operatorBoxTitle}>Choose Tanlent</h5>
+                                <div className={style.choosePhasesWrap}>
+                                    <ul>
+                                        {
+                                            printTalentBtn.potentialRank.map(potential => {
+                                                return <>
+                                                    <li className={chooseTalentPotential === potential ? style.active : ''}><Image src={`/sample/potential/${potential + 1}.png`} width={40} height={40} alt="elite-0" onClick={() => { clickTalentPotential(potential) }}></Image></li>
+                                                </>
+
+                                            })
+                                        }
+
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div className={style.operatorBoxContent}>
+
+                                {printTalent.map(talent => {
+                                    return <>
+                                        <div className={style.tanlentBoxWrap}>
+                                            <div className={style.tanlentBox}>
+                                                <div className={style.tanlentTitle}>
+                                                    <span>{talent.name}</span>
+                                                    <div className={style.tanlentPotentialIcon}>
+                                                        <Image src={`/sample/elite/${talent.unlockCondition.phase}-s.png`} alt='potential-icon' width={18} height={18}></Image>
+                                                    </div>
+                                                    <div className={style.tanlentPotentialIcon}>
+                                                        <Image src={`/sample/potential/${talent.requiredPotentialRank + 1}.png`} alt='potential-icon' width={18} height={18}></Image>
+                                                    </div>
+                                                </div>
+                                                <div className={style.tanlentContent} dangerouslySetInnerHTML={{ __html: replaceTalentDescription(talent.description) }}></div>
+                                            </div>
+                                        </div>
+                                    </>
+                                })}
+
+
+                            </div>
+
+                        </div>}
+
+
+                        {(printFirstInfra || printSecondInfra) &&
+                            <div className={style.operatorBasicInfoBox}>
+                                <h4 className={style.operatorBasicInfoTitle}>인프라 스킬</h4>
+                                <div className={style.choosePhasesWrap}>
+
+                                    <ul>
+                                        {
+                                            printInfra.map(phase => {
+                                                return <>
+                                                    <li className={chooseInfraElite === phase.phase ? style.active : ''}><Image src={`/sample/elite/${phase.phase}-s.png`} width={40} height={40} alt='elite-image' onClick={() => clickInfraElite(phase.phase)}></Image></li>
+                                                </>
+                                            })
+                                        }
+
+                                    </ul>
+
+                                </div>
+                                <div className={style.infraSkillBoxWrap}>
+
+                                    {
+                                        printFirstInfra && <div className={style.infraSkillBox}>
+
+                                            <div className={style.infraSkillTitleWrap}>
+                                                <div className={style.infraSKillIcon}>
+                                                    <Image src={`${process.env.NEXT_PUBLIC_CLOUD_URL}ui/infrastructure/skill/${printFirstInfra.skillIcon}.png`} alt='infra-skill-icon' width={20} height={20}></Image>
+                                                </div>
+                                                <div className={style.infraSkillTitle}>{printFirstInfra.buffName}</div>
+                                            </div>
+                                            <div className={style.infraSkillContent} dangerouslySetInnerHTML={{ __html: replaceInfraDescription(printFirstInfra.description) }}>
+
+                                            </div>
+                                        </div>
+                                    }
+
+                                    {
+                                        printSecondInfra && <div className={style.infraSkillBox}>
+
+                                            <div className={style.infraSkillTitleWrap}>
+                                                <div className={style.infraSKillIcon}>
+                                                    <Image src={`${process.env.NEXT_PUBLIC_CLOUD_URL}ui/infrastructure/skill/${printSecondInfra.skillIcon}.png`} alt='infra-skill-icon' width={20} height={20}></Image>
+                                                </div>
+                                                <div className={style.infraSkillTitle}>{printSecondInfra.buffName}</div>
+                                            </div>
+                                            <div className={style.infraSkillContent} dangerouslySetInnerHTML={{ __html: replaceInfraDescription(printSecondInfra.description) }}>
+
+                                            </div>
+                                        </div>
+                                    }
+
+                                </div>
+                            </div>}
+
+
+                        {/* <div className={style.operatorBasicInfoBox}>
+                            <h4 className={style.operatorBasicInfoTitle}>스킬</h4>
+                        </div>
+
+                        <div className={style.operatorBasicInfoBox}>
+                            <h4 className={style.operatorBasicInfoTitle}>모듈</h4>
+                        </div> */}
+                    </StackGrid>
+
                 </div>
             </ContentLayout>
         </PageLayout>
     </>
+}
+
+export async function getServerSideProps(context: GetServerSidePropsContext) {
+    // GET Operator Data
+    const id = context.params ? context.params._id as string : ''
+    const operator: OperatorDetail = await getOperatorDetail(id)
+
+    const searchId = operator.potentialItemId.slice(2)
+
+    let infraInfo: InfraType | null = null
+    try {
+        infraInfo = await getInfraInfo(searchId)
+    } catch (err: any) {
+
+    }
+
+
+
+    // operator.phases 반복, 안에서 evolveCost 반복, id값 캐치
+    let itemIds: string[] = []
+
+    operator.phases.map(phase => {
+        if (phase.evolveCost) {
+            phase.evolveCost.map(cost => {
+                itemIds = [...itemIds, cost.id]
+            })
+        }
+    })
+
+    // Item 정보 가져오기
+    let itemInfo: Items | null = null
+    try {
+        itemInfo = await getItemInfo(itemIds)
+    } catch (err: any) {
+
+    }
+
+    // 맞는 데이터 세팅
+    operator.phases.map(phase => {
+        if (phase.evolveCost) {
+            phase.evolveCost.map(cost => {
+                if (itemInfo) {
+                    cost.item = itemInfo.find(obj => obj.itemId === cost.id)
+                }
+            })
+        }
+    })
+
+
+    const pattern = /<@ba.kw>(.*?)<\/>/g;
+    const jsx = "<span class='text-color'>$1</span>"
+    operator.description = operator.description.replace(pattern, jsx)
+
+    return {
+        props: {
+            results: {
+                operator: operator,
+                infra: infraInfo,
+                itemInfo: itemInfo
+            }
+        }
+    }
+
 }

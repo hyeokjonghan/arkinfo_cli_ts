@@ -4,6 +4,7 @@ import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap-icons/font/bootstrap-icons.css'
 import DefaultLayout from '../layout/defaultLayout'
 import '@/styles/globals.scss'
+import 'react-bootstrap-range-slider/dist/react-bootstrap-range-slider.css'
 import { QueryClient, QueryClientProvider } from "react-query";
 
 const queryClient = new QueryClient();

@@ -1,6 +1,6 @@
-@mixin hover-supported {    
-    @media (hover: hover) { 
-      @content;
+@mixin hover-supported {
+    @media (hover: hover) {
+        @content;
     }
 }
 
@@ -10,15 +10,17 @@
     font-weight: bold;
     cursor: pointer;
     transition: background-color 0.5s;
-    -webkit-box-shadow: 1px 6px 6px 0px rgba(0,0,0,0.58); 
-    box-shadow: 1px 6px 6px 0px rgba(0,0,0,0.58);
+    -webkit-box-shadow: 1px 6px 6px 0px rgba(0, 0, 0, 0.58);
+    box-shadow: 1px 6px 6px 0px rgba(0, 0, 0, 0.58);
     border: none;
+
     @include hover-supported() {
         &:hover {
             background-color: $active-color;
         }
     }
-    &.selected{
+
+    &.selected {
         background-color: $active-color;
     }
 }
@@ -28,4 +30,12 @@
     padding: 10px 10px 20px 10px;
     border-radius: 5px;
     background-color: #666;
+}
+
+@mixin operatorDetailBox() {
+    background-color: rgba(0, 0, 0, 0.4);
+    color: #FFF;
+    padding: 5px 10px;
+    box-shadow: 0px 2px 1px rgba(0, 0, 0, 0.1), 2px 2px 2px 1px rgba(0, 0, 0, 0.1);
+    @content;
 }
