@@ -15,6 +15,7 @@ import { getItemInfo } from '../api/item';
 import { Items } from '@/types/item';
 
 import { replaceInfraDescription, replaceTalentDescription } from "@/lib/replaceText"
+import Module from '@/components/operatorDetail/module';
 
 type ssrType = {
     operator: OperatorDetail,
@@ -821,6 +822,10 @@ export default function OperatorDetailPage({ results }: ssrResultType) {
                                 </div>
                             </div>}
 
+                        <div className={style.operatorBasicInfoBox}>
+                            <h4 className={style.operatorBasicInfoTitle}>모듈</h4>
+                            {/* <Module/> */}
+                        </div>
 
                         {/* <div className={style.operatorBasicInfoBox}>
                             <h4 className={style.operatorBasicInfoTitle}>스킬</h4>

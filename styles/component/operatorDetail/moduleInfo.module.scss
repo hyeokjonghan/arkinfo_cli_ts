@@ -1,0 +1,133 @@
+.moduleInfoWrap {
+    .moduleSelectInfoWrap {
+        .moduleSelectorWrap {
+            display: flex;
+            .moduleSelector {
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                cursor: pointer;
+                border-left: 1px solid #FFF;
+                border-top: 1px solid #FFF;
+                border-bottom: 1px solid #FFF;
+                &:last-child {
+                    border-right: 1px solid #FFF;
+                }
+
+                .moduleClassImageWrap {
+                    background-position: center;
+                    background-repeat: no-repeat;
+                    background-size: 50px;
+                    padding: 10px 0;
+                    width: 70px;
+                    text-align: center;
+                }
+
+                .moduleClassTitle {
+                    font-size: 0.7em;
+                    background-color: $sub-primary-color;
+                    color: #FFF;
+                    width: 100%;
+                    padding: 1px 0;
+                    text-align: center;
+                }
+                &:hover {
+                    .moduleClassImageWrap {
+                        background-color: rgba(0,0,0,0.3);
+                    }
+                    .moduleClassTitle {
+                        background-color: $primary-color;
+                    }
+                }
+                &.active {
+                    .moduleClassImageWrap {
+                        background-color: rgba(0,0,0,0.3);
+                    }
+                    .moduleClassTitle {
+                        background-color: $primary-color;
+                    }
+                }
+            }
+        }
+    }
+
+    .moduleContentBoxWrap {
+        margin-top: 10px;
+        @include operatorDetailBox() {
+            padding: 0;
+        }
+
+        .moduleTitleWrap {
+            position: relative;
+            display: flex;
+            align-items: center;
+            background-color: #000;
+            .moduleImageWrap {
+                position: relative;
+                width: 110px;
+                height: 110px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                .moreInfoBtn {
+                    position: absolute;
+                    right: 5px;
+                    bottom: 5px;
+                    color: $text-color;
+                    background-color: rgba(255,255,255,0.2);
+                    width: 30px;
+                    height: 30px;
+                    font-size: 0.8em;
+                    line-height: 30px;
+                    text-align: center;
+                    cursor: pointer;
+                    border-radius: 5px;
+                }
+            }
+            .moduleTitle {
+                height: 110px;
+                width: calc(100% - 110px);
+                display: flex;
+                align-items: center;
+                h5 {
+                    font-size: 1.2em;
+                    color: $text-color;
+                    padding: 0 10px;
+                }
+            }
+        }
+
+        .moduleStageBtnWrap {
+            display: flex;
+            width: 100%;
+            background-color: #000;
+            .moduleStageBtn {
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                text-align: center;
+                background-color: $container-background-color;
+                cursor: pointer;
+                .moduleStageLevel {
+                    font-size: 1.3em;
+                    font-weight: bold;
+                    height: 40px;
+                    width: 60px;
+                    line-height: 40px;
+                }
+                .moduleStageText {
+                    font-size: 0.7em;
+                    width: 60px;
+                }
+                &.active {
+                    background-color: rgba(255,255,255,0.25);
+                }
+                &:hover {
+                    background-color: rgba(255,255,255,0.25);
+                }
+            }
+        }
+    }
+}
